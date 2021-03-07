@@ -11,9 +11,12 @@ def serve(id, sock_tcp, sock_udp):
 
     while True:
         helo_message = ''
-        while "\n" not in helo_message:
-            chunk = sock_tcp.recv(2048).decode()
-            helo_message = helo_message+chunk
+        try:
+            while "\n" not in helo_message:
+                chunk = sock_tcp.recv(2048).decode()
+                helo_message = helo_message+chunk
+        except ConnectionResetError:
+            return
         if "HELO " not in helo_message:
             print("Unexpected message")
             continue
@@ -21,7 +24,8 @@ def serve(id, sock_tcp, sock_udp):
         helo_message = helo_message.replace("\n","")
         for x in clients_list:
             if helo_message.split(" ")[0] in x:
-                rjct_message = "RJCT " + helo_message.split(" ")[0]
+                print("got here")
+                rjct_message = "RJCT " + helo_message.split(" ")[0] + "\n"
                 sock_tcp.send(rjct_message.encode())
                 RJCT_FLAG = True
                 break
@@ -44,9 +48,12 @@ def serve(id, sock_tcp, sock_udp):
 
     while True:
         exit_message = ''
-        while "\n" not in exit_message:
-            chunk = sock_tcp.recv(2048).decode()
-            exit_message = exit_message+chunk
+        try:
+            while "\n" not in exit_message:
+                chunk = sock_tcp.recv(2048).decode()
+                exit_message = exit_message+chunk
+        except ConnectionResetError:
+            return
         if "EXIT\n" not in exit_message:
             print("Unexpected message")
             continue
